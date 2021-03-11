@@ -11,6 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from AddFaceGui import AddFace
 from DetectFaceGui import DetectFace
+from DeleteFaceGui import DeleteFace
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -26,7 +27,11 @@ class Ui_MainWindow(object):
         self.add_face.setObjectName("add_face")
         self.add_face.setStyleSheet("background-color: red")
 
-        
+        self.quit = QtWidgets.QPushButton(self.centralwidget)
+        self.quit.setGeometry(QtCore.QRect(620, 460, 151, 61))
+        self.quit.setObjectName("quit")
+        self.quit.setStyleSheet("background-color: red")
+
         self.textBrowser = QtWidgets.QTextBrowser(self.centralwidget)
         self.textBrowser.setGeometry(QtCore.QRect(230, 100, 400, 51))
         self.textBrowser.setObjectName("textBrowser")
@@ -58,6 +63,9 @@ class Ui_MainWindow(object):
 
         self.add_face.clicked.connect(self.addface)
         self.detect_face.clicked.connect(self.detectface)
+        self.delete_face.clicked.connect(self.deleteface)
+
+        self.quit.clicked.connect(self.quitGui)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -66,6 +74,7 @@ class Ui_MainWindow(object):
         self.textBrowser.setText(_translate("MainWindow", self.title))
         self.detect_face.setText(_translate("MainWindow", "DETECT FACE"))
         self.delete_face.setText(_translate("MainWindow", "DELETE FACE"))
+        self.quit.setText(_translate("MainWindow", "QUIT"))
 
     def addface(self):
         self.add_face_gui = QtWidgets.QMainWindow()
@@ -78,6 +87,15 @@ class Ui_MainWindow(object):
         self.detect_face_ui = DetectFace()
         self.detect_face_ui.setupUi(self.detect_face_gui)
         self.detect_face_gui.show()
+    
+    def deleteface(self):
+        self.delete_face_gui = QtWidgets.QMainWindow()
+        self.delete_face_ui = DeleteFace()
+        self.delete_face_ui.setupUi(self.delete_face_gui)
+        self.delete_face_gui.show()
+
+    def quitGui(self):
+        MainWindow.close()
 
 if __name__ == "__main__":
     import sys

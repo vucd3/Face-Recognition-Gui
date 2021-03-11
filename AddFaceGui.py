@@ -130,7 +130,11 @@ class AddFace(object):
         self.roi = None
         
         self.image_saved = []
+        self.image_name = []
         self.image_saved_new = []
+        self.image_name_new = []
+
+        self.data = {}
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -172,9 +176,17 @@ class AddFace(object):
     def getImageFromFile(self):
         if os.path.getsize("images.pickle") > 0:
             with open("images.pickle", "rb") as e:
-                self.image_saved = pickle.load(e)
-                e.close()
+                data = pickle.load(e)
+            
+            self.image_saved = data["images"]
+            self.image_name = data["names"]
+            e.close()
 
+    def getDataOld(self):
+        with open("encodings.pickle", "rb") as f:
+            self.data = pickle.load(f)
+            f.close()
+            
     def getIndex(self, imagePath):
         a = imagePath.split('/')[-1]
         b = int(a[:len(a)-4])
@@ -195,10 +207,23 @@ class AddFace(object):
 
         knownEncodings = []
         knownNames = []
-        
+
+        if not os.path.exists("encodings.pickle"):
+            f = open("encodings.pickle", "wb")
+            f.close()
+
+        if os.path.getsize("encodings.pickle") > 0:
+            self.getDataOld()
+            knownEncodings = self.data['encodings']
+            knownNames = self.data['names']
+        else:
+            knownEncodings = []
+            knownNames = []
+
         self.getImageFromFile()
 
         self.image_saved_new = self.image_saved
+        self.image_name_new = self.image_name
 
         # loop over the image paths
         for imagePath in imagePaths:
@@ -214,6 +239,7 @@ class AddFace(object):
                     len(os.listdir("Dataset/"+name))))
 
                 self.image_saved_new.append(image)
+                self.image_name_new.append(name)
             else:
                 continue
             # detect the (x, y)-coordinates of the bounding boxes
@@ -231,14 +257,15 @@ class AddFace(object):
                 knownNames.append(name)
 
         #dump the pixel of image 
+        data_1 = {"images": self.image_saved_new, "names": self.image_name_new}
         e = open("images.pickle", "wb")
-        e.write(pickle.dumps(self.image_saved_new))
+        e.write(pickle.dumps(data_1))
         e.close()
 
         # dump the facial encodings + names to disk
-        data = {"encodings": knownEncodings, "names": knownNames}
+        data_2 = {"encodings": knownEncodings, "names": knownNames}
         f = open("encodings.pickle", "wb")
-        f.write(pickle.dumps(data))
+        f.write(pickle.dumps(data_2))
         f.close()
 
         self.showTraining()
