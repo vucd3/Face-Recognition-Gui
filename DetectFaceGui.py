@@ -22,14 +22,19 @@ class DetectFace(object):
 
         self.MainWindow = MainWindow
 
+        font = QtGui.QFont('Arial', 12, QtGui.QFont.Bold)
+
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
+
+        self.msg = QtWidgets.QMessageBox(self.centralwidget)
+        self.msg.setWindowTitle("Message")
+        self.msg.setGeometry(QtCore.QRect(230, 180, 256, 121))
 
         self.frame = QtWidgets.QFrame(self.centralwidget)
         self.frame.setGeometry(QtCore.QRect(30, 20, 551, 501))
         self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame.setLineWidth(6)
         self.frame.setObjectName("frame")
 
         self.text = QtWidgets.QTextBrowser(self.frame)
@@ -42,7 +47,7 @@ class DetectFace(object):
         self.webcam.setObjectName("webcam")
 
         self.frame_2 = QtWidgets.QFrame(self.centralwidget)
-        self.frame_2.setGeometry(QtCore.QRect(610, 20, 301, 161))
+        self.frame_2.setGeometry(QtCore.QRect(610, 20, 301, 221))
         self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
         self.frame_2.setObjectName("frame_2")
@@ -50,27 +55,39 @@ class DetectFace(object):
         self.label = QtWidgets.QLabel(self.frame_2)
         self.label.setGeometry(QtCore.QRect(90, 10, 111, 17))
         self.label.setObjectName("label")
+        self.label.setFont(font)
 
         self.label_2 = QtWidgets.QLabel(self.frame_2)
         self.label_2.setGeometry(QtCore.QRect(20, 60, 51, 17))
         self.label_2.setObjectName("label_2")
+        self.label_2.setFont(font)
 
         self.label_3 = QtWidgets.QLabel(self.frame_2)
-        self.label_3.setGeometry(QtCore.QRect(20, 110, 51, 17))
+        self.label_3.setGeometry(QtCore.QRect(20, 160, 51, 17))
         self.label_3.setObjectName("label_3")
+        self.label_3.setFont(font)
+
+        self.label_4 = QtWidgets.QLabel(self.frame_2)
+        self.label_4.setGeometry(QtCore.QRect(20, 110, 51, 17))
+        self.label_4.setObjectName("label_4")
+        self.label_4.setFont(font)
 
         self.time = QtWidgets.QTextBrowser(self.frame_2)
-        self.time.setGeometry(QtCore.QRect(90, 100, 181, 31))
+        self.time.setGeometry(QtCore.QRect(90, 150, 181, 31))
         self.time.setObjectName("time")
 
         self.name = QtWidgets.QTextBrowser(self.frame_2)
         self.name.setGeometry(QtCore.QRect(90, 50, 181, 31))
         self.name.setObjectName("name")
 
-        self.detect = QtWidgets.QPushButton(self.centralwidget)
-        self.detect.setGeometry(QtCore.QRect(30, 530, 551, 31))
-        self.detect.setObjectName("detect")
-        self.detect.setStyleSheet("background-color: red")
+        self.date = QtWidgets.QTextBrowser(self.frame_2)
+        self.date.setGeometry(QtCore.QRect(90, 100, 181, 31))
+        self.date.setObjectName("date")
+
+        self.save = QtWidgets.QPushButton(self.centralwidget)
+        self.save.setGeometry(QtCore.QRect(30, 530, 551, 31))
+        self.save.setObjectName("save")
+        self.save.setStyleSheet("background-color: red")
 
         self.quit = QtWidgets.QPushButton(self.centralwidget)
         self.quit.setGeometry(QtCore.QRect(820, 520, 111, 41))
@@ -97,12 +114,12 @@ class DetectFace(object):
         self.timer.start(2)
         self.timer.timeout.connect(self.update_frame)
         
-        self.face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-        
-        self.face_Enabled = False
+        self.face_name = None
+        self.enable = None
 
-        self.detect.setCheckable(True)
-        self.detect.toggled.connect(self.detect_webcam_face)
+        self.face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+
+        self.save.clicked.connect(self.save_infor)
         self.quit.clicked.connect(self.quitGui)
 
     def retranslateUi(self, MainWindow):
@@ -112,24 +129,14 @@ class DetectFace(object):
         self.label.setText(_translate("MainWindow", "INFORMATION"))
         self.label_2.setText(_translate("MainWindow", "NAME"))
         self.label_3.setText(_translate("MainWindow", "TIME"))
-        self.detect.setText(_translate("MainWindow", "DETECT FACE"))
+        self.save.setText(_translate("MainWindow", "SAVE INFORMATION"))
         self.quit.setText(_translate("MainWindow", "QUIT"))
-
-    def detect_webcam_face(self,status):
-        if status:
-            self.detect.setText('STOP DETECTION')
-            self.face_Enabled = True
-        else:
-            self.detect.setText('DETECT FACE')
-            self.face_Enabled = False
+        self.label_4.setText(_translate("MainWindow", "DATE"))
 
     def update_frame(self):
         _, self.image=self.capture.read()
-        if self.face_Enabled:
-            image_detected = self.detect_face(self.image)
-            self.displayImage(image_detected)
-        else:
-            self.displayImage(self.image)
+        image_detected = self.detect_face(self.image)
+        self.displayImage(image_detected)
 
     def displayImage(self,img):
         outImage=QtGui.QImage(img,img.shape[1],img.shape[0],img.strides[0],QtGui.QImage.Format_RGB888)
@@ -177,13 +184,24 @@ class DetectFace(object):
             cv2.rectangle(img, (left, top), (right, bottom),
                 (0, 255, 0), 5)
             y = top - 15 if top - 15 > 15 else top + 15
-            cv2.putText(img, name, (left, y), cv2.FONT_HERSHEY_SIMPLEX,
-                0.75, (0, 255, 0), 5)
-
-        self.name.setText(name)
-
+    
+            self.face_name = name
         return img
- 
+    
+    def save_infor(self):
+        current_date = QtCore.QDate.currentDate()
+        current_time = QtCore.QTime.currentTime()
+
+        if self.face_name != "Unknown":
+            self.name .setText(self.face_name)
+            self.time.setText(current_time.toString())
+            self.date.setText(current_date.toString())
+
+            self.msg.setText("Save Information Succesfully!")
+        else:
+            self.msg.setText("Face is not identified!")
+        self.msg.exec()
+
     def quitGui(self):
         self.timer.stop()
         self.capture.release()

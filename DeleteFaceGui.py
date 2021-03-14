@@ -11,6 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import os
 import pickle
+import numpy as np
 
 class DeleteFace(object):
     def setupUi(self, MainWindow):
@@ -21,21 +22,40 @@ class DeleteFace(object):
 
         self.MainWindow = MainWindow
 
+        font = QtGui.QFont('Arial', 12, QtGui.QFont.Bold)
+
+        self.frame = QtWidgets.QFrame(self.centralwidget)
+        self.frame.setGeometry(QtCore.QRect(30, 30, 401, 481))
+        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame.setObjectName("frame")
+
         self.msg = QtWidgets.QMessageBox(self.centralwidget)
         self.msg.setWindowTitle("Message")
         self.msg.setGeometry(QtCore.QRect(240, 230, 500, 500))
 
         self.ok = QtWidgets.QPushButton(self.centralwidget)
-        self.ok.setGeometry(QtCore.QRect(480, 160, 89, 31))
+        self.ok.setGeometry(QtCore.QRect(580, 140, 89, 31))
         self.ok.setObjectName("ok")
         self.ok.setStyleSheet("background-color: red")
 
         self.name = QtWidgets.QLineEdit(self.centralwidget)
-        self.name.setGeometry(QtCore.QRect(270, 160, 171, 31))
+        self.name.setGeometry(QtCore.QRect(540, 90, 171, 31))
         self.name.setObjectName("name")
+
         self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(200, 170, 67, 17))
+        self.label.setGeometry(QtCore.QRect(480, 100, 61, 20))
         self.label.setObjectName("label")
+        self.label.setFont(font)
+
+        self.label_2 = QtWidgets.QLabel(self.frame)
+        self.label_2.setGeometry(QtCore.QRect(160, 10, 131, 41))
+        self.label_2.setObjectName("label_2")
+        self.label_2.setFont(font)
+
+        self.list_face = QtWidgets.QTextBrowser(self.frame)
+        self.list_face.setGeometry(QtCore.QRect(50, 60, 281, 391))
+        self.list_face.setObjectName("list_face")
 
         self.quit = QtWidgets.QPushButton(self.centralwidget)
         self.quit.setGeometry(QtCore.QRect(660, 450, 111, 61))
@@ -57,12 +77,17 @@ class DeleteFace(object):
         self.status = True
         self.image_saved = []
         self.image_name = []
+
         self.image_path = []
 
-        self.faceName = None
+        self.knowEncodings = []
+        self.knowName = []
+
+        self.faceName = ""
 
         self.ok.clicked.connect(self.delete_face)
         self.quit.clicked.connect(self.quitGui)
+        self.showListFace()
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -70,6 +95,8 @@ class DeleteFace(object):
         self.ok.setText(_translate("MainWindow", "OK"))
         self.label.setText(_translate("MainWindow", "NAME"))
         self.quit.setText(_translate("MainWindow", "QUIT"))
+        self.label_2.setText(_translate("MainWindow", "LIST FACE"))
+        self.list_face.setText(_translate("MainWindow", ""))
 
     def showMessage(self):
         if self.status:
@@ -78,25 +105,50 @@ class DeleteFace(object):
             self.msg.setText("No face of {} in system" .format(self.name.text()))
         self.msg.exec()
     
-    def processImageFile(self):
-        if os.path.getsize("images.pickle") > 0 and self.status:
-            with open("images.pickle", "rb") as f:
-                data = pickle.load(f)
-            
-            self.image_saved = data["images"]
-            self.image_name = data["names"]
-            
-            for name in self.image_name:
-                if name == self.faceName:
-                    self.image_name.remove(name)
-                    self.image_saved.remove(self.image_saved[self.image_name.index(name)])
-            
-            data = {"images": self.image_saved, "names": self.image_name}
+    def getDataFromImageFile(self):
+        with open("images.pickle", "rb") as f:
+            data = pickle.load(f)
 
-            e = open("images.pickle", "wb")
-            e.write(pickle.dumps(data))
-            e.close()
+        self.image_saved = data["images"]
+        self.image_name = data["names"]
+        f.close()
+    
+    def getDataFromEncodingFile(self):
+        with open("encodings.pickle", "rb") as g:
+            data = pickle.load(g)
+        
+        self.knowEncodings = data["encodings"]
+        self.knowName = data["names"]
+        g.close()
             
+    def processImageFile(self):
+        self.getDataFromImageFile()
+        self.getDataFromEncodingFile()
+
+        for name in list(self.image_name):
+            if name == self.faceName:
+                a = self.image_saved[self.image_name.index(name)]
+                self.image_saved[self.image_name.index(name)] = np.zeros(shape=a.shape)
+                self.image_saved.remove(self.image_saved[self.image_name.index(name)])
+                self.image_name.remove(name)
+                
+                b = self.knowEncodings[self.knowName.index(name)]
+                self.knowEncodings[self.knowName.index(name)] = np.zeros(shape=b.shape)
+                self.knowEncodings.remove(self.knowEncodings[self.knowName.index(name)])
+                self.knowName.remove(name)
+            else:
+                continue
+
+        data1 = {"images": self.image_saved, "names": self.image_name}
+        f = open("images.pickle", "wb") 
+        f.write(pickle.dumps(data1))
+        f.close()
+            
+        data2 = {"encodings": self.knowEncodings, "names": self.knowName}
+        g = open("encodings.pickle", "wb") 
+        g.write(pickle.dumps(data2))
+        g.close()
+
     def delete_face(self):
         self.faceName = self.name.text()
 
@@ -107,18 +159,28 @@ class DeleteFace(object):
             self.image_path = "Dataset/" + self.faceName
 
             if os.path.exists(self.image_path):
+                self.status = True
+                self.processImageFile()
                 images = os.listdir(self.image_path)
                 for image in images:
                     os.remove(self.image_path+"/"+image)
                 os.rmdir("Dataset/"+self.faceName)
-                self.status = True
             else:
                 self.status = False
 
-            self.processImageFile()
             self.showMessage()
-            self.name.setText("")
-            
+            self.showListFace()
+
+        self.name.setText("")
+    
+    def showListFace(self):
+        self.getDataFromImageFile()
+        self.list_face.setText("")
+        temp_name = []
+        for name in self.image_name:
+            if name not in temp_name:
+                self.list_face.append(name)
+                temp_name.append(name)
 
     def quitGui(self):
         self.MainWindow.close()

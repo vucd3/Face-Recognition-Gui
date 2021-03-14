@@ -177,7 +177,6 @@ class AddFace(object):
         if os.path.getsize("images.pickle") > 0:
             with open("images.pickle", "rb") as e:
                 data = pickle.load(e)
-            
             self.image_saved = data["images"]
             self.image_name = data["names"]
             e.close()
@@ -204,9 +203,6 @@ class AddFace(object):
     def training(self):  
         imagePaths = list(paths.list_images("Dataset"))
         imagePaths.sort(key=lambda f: int(re.sub('\D', '', f)))
-
-        knownEncodings = []
-        knownNames = []
 
         if not os.path.exists("encodings.pickle"):
             f = open("encodings.pickle", "wb")
