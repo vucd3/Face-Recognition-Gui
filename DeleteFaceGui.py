@@ -58,7 +58,7 @@ class DeleteFace(object):
         self.list_face.setObjectName("list_face")
 
         self.quit = QtWidgets.QPushButton(self.centralwidget)
-        self.quit.setGeometry(QtCore.QRect(660, 450, 111, 61))
+        self.quit.setGeometry(QtCore.QRect(660, 470, 111, 41))
         self.quit.setObjectName("quit")
         self.quit.setStyleSheet("background-color: red")
 
@@ -127,13 +127,11 @@ class DeleteFace(object):
 
         for name in list(self.image_name):
             if name == self.faceName:
-                a = self.image_saved[self.image_name.index(name)]
-                self.image_saved[self.image_name.index(name)] = np.zeros(shape=a.shape)
+                self.image_saved[self.image_name.index(name)] = []
                 self.image_saved.remove(self.image_saved[self.image_name.index(name)])
                 self.image_name.remove(name)
-                
-                b = self.knowEncodings[self.knowName.index(name)]
-                self.knowEncodings[self.knowName.index(name)] = np.zeros(shape=b.shape)
+
+                self.knowEncodings[self.knowName.index(name)] = []
                 self.knowEncodings.remove(self.knowEncodings[self.knowName.index(name)])
                 self.knowName.remove(name)
             else:

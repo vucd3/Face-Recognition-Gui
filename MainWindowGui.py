@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'MainWindowGui.ui'
+# Form implementation generated from reading ui file 'DetectFaceGui.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.3
 #
@@ -10,141 +10,297 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from AddFaceGui import AddFace
-from DetectFaceGui import DetectFace
 from DeleteFaceGui import DeleteFace
 
-class Ui_MainWindow(object):
+import cv2
+import face_recognition
+import imutils
+import time
+import pickle
+
+class DetectFace(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
-
-        font = QtGui.QFont('Arial', 12, QtGui.QFont.Bold)
+        MainWindow.resize(942, 612)
 
         self.MainWindow = MainWindow
+
+        self.add_face_gui = QtWidgets.QMainWindow()
+        self.delete_face_gui = QtWidgets.QMainWindow()
+
+        font = QtGui.QFont('Arial', 12, QtGui.QFont.Bold)
 
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
 
-        self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(290, 320, 41, 17))
+        self.msg = QtWidgets.QMessageBox(self.centralwidget)
+        self.msg.setWindowTitle("Message")
+        self.msg.setGeometry(QtCore.QRect(230, 180, 256, 121))
+
+        self.text = QtWidgets.QTextBrowser(self.centralwidget)
+        self.text.setGeometry(QtCore.QRect(160, 20, 441, 51))
+        self.text.setObjectName("text")
+        self.text.setStyleSheet("background-color: yellow")
+
+        self.webcam = QtWidgets.QLabel(self.centralwidget)
+        self.webcam.setGeometry(QtCore.QRect(30, 110, 521, 401))
+        self.webcam.setText("")
+        self.webcam.setObjectName("webcam")
+
+        self.frame = QtWidgets.QFrame(self.centralwidget)
+        self.frame.setGeometry(QtCore.QRect(630, 240, 301, 221))
+        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
+        self.frame.setObjectName("frame")
+
+        self.label = QtWidgets.QLabel(self.frame)
+        self.label.setGeometry(QtCore.QRect(90, 10, 111, 17))
         self.label.setObjectName("label")
         self.label.setFont(font)
 
-        self.label_1 = QtWidgets.QLabel(self.centralwidget)
-        self.label_1.setGeometry(QtCore.QRect(290, 360, 41, 17))
-        self.label_1.setObjectName("label_1")
-        self.label_1.setFont(font)
+        self.label_2 = QtWidgets.QLabel(self.frame)
+        self.label_2.setGeometry(QtCore.QRect(20, 60, 51, 17))
+        self.label_2.setObjectName("label_2")
+        self.label_2.setFont(font)
 
-        self.date = QtWidgets.QTextBrowser(self.centralwidget)
-        self.date.setGeometry(QtCore.QRect(350, 310, 141, 31))
-        self.date.setObjectName("date")
-        self.date.setFont(font)
+        self.label_3 = QtWidgets.QLabel(self.frame)
+        self.label_3.setGeometry(QtCore.QRect(20, 160, 51, 17))
+        self.label_3.setObjectName("label_3")
+        self.label_3.setFont(font)
 
-        self.time = QtWidgets.QTextBrowser(self.centralwidget)
-        self.time.setGeometry(QtCore.QRect(350, 350, 141, 31))
+        self.label_4 = QtWidgets.QLabel(self.frame)
+        self.label_4.setGeometry(QtCore.QRect(20, 110, 51, 17))
+        self.label_4.setObjectName("label_4")
+        self.label_4.setFont(font)
+
+        self.time = QtWidgets.QTextBrowser(self.frame)
+        self.time.setGeometry(QtCore.QRect(90, 150, 181, 31))
         self.time.setObjectName("time")
-        self.time.setFont(font)
 
-        self.add_face = QtWidgets.QPushButton(self.centralwidget)
-        self.add_face.setGeometry(QtCore.QRect(100, 220, 131, 41))
-        self.add_face.setObjectName("add_face")
-        self.add_face.setStyleSheet("background-color: red")
+        self.name = QtWidgets.QTextBrowser(self.frame)
+        self.name.setGeometry(QtCore.QRect(90, 50, 181, 31))
+        self.name.setObjectName("name")
+
+        self.date = QtWidgets.QTextBrowser(self.frame)
+        self.date.setGeometry(QtCore.QRect(90, 100, 181, 31))
+        self.date.setObjectName("date")
+
+        self.label_5 = QtWidgets.QLabel(self.centralwidget)
+        self.label_5.setGeometry(QtCore.QRect(690, 30, 41, 17))
+        self.label_5.setObjectName("label_5")
+        self.label_5.setFont(font)
+
+        self.label_6 = QtWidgets.QLabel(self.centralwidget)
+        self.label_6.setGeometry(QtCore.QRect(690, 80, 41, 17))
+        self.label_6.setObjectName("label_6")
+        self.label_6.setFont(font)
+
+        self.date_1 = QtWidgets.QTextBrowser(self.centralwidget)
+        self.date_1.setGeometry(QtCore.QRect(750, 20, 161, 31))
+        self.date_1.setObjectName("date1")
+        self.date_1.setFont(font)
+
+        self.time_1 = QtWidgets.QTextBrowser(self.centralwidget)
+        self.time_1.setGeometry(QtCore.QRect(750, 70, 161, 31))
+        self.time_1.setObjectName("time1")
+        self.time_1.setFont(font)
+
+        self.save = QtWidgets.QPushButton(self.centralwidget)
+        self.save.setGeometry(QtCore.QRect(10, 530, 551, 31))
+        self.save.setObjectName("save")
+        self.save.setStyleSheet("background-color: red")
 
         self.quit = QtWidgets.QPushButton(self.centralwidget)
-        self.quit.setGeometry(QtCore.QRect(620, 460, 151, 61))
+        self.quit.setGeometry(QtCore.QRect(820, 520, 111, 41))
         self.quit.setObjectName("quit")
         self.quit.setStyleSheet("background-color: red")
 
-        self.textBrowser = QtWidgets.QTextBrowser(self.centralwidget)
-        self.textBrowser.setGeometry(QtCore.QRect(230, 100, 400, 51))
-        self.textBrowser.setObjectName("textBrowser")
-        self.textBrowser.setStyleSheet("background-color: yellow")
-
-        self.detect_face = QtWidgets.QPushButton(self.centralwidget)
-        self.detect_face.setGeometry(QtCore.QRect(340, 220, 131, 41))
-        self.detect_face.setObjectName("detect_face")
-        self.detect_face.setStyleSheet("background-color: red")
-
-        self.delete_face = QtWidgets.QPushButton(self.centralwidget)
-        self.delete_face.setGeometry(QtCore.QRect(580, 220, 131, 41))
-        self.delete_face.setObjectName("delete_face")
-        self.delete_face.setStyleSheet("background-color: red")
-
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 942, 22))
         self.menubar.setObjectName("menubar")
+
+        self.menu = QtWidgets.QMenu(self.menubar)
+        self.menu.setObjectName("menu")
+
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
 
-        self.add_face_gui = QtWidgets.QMainWindow()
-        self.detect_face_gui = QtWidgets.QMainWindow()
-        self.delete_face_gui = QtWidgets.QMainWindow()
+        self.addFace = QtWidgets.QAction(MainWindow)
+        self.addFace.setObjectName("add_face")
+        
+        self.detectFace = QtWidgets.QAction(MainWindow)
+        self.detectFace.setObjectName("detect_face")
 
-        self.title = "<span style=\" font-size:22pt; font-weight:600; color:#ff0000;\" >"
+        self.viewInfor = QtWidgets.QAction(MainWindow)
+        self.viewInfor.setObjectName("view_infor")
+
+        self.menu.addAction(self.addFace)
+        self.menu.addAction(self.detectFace)
+        self.menu.addAction(self.viewInfor)
+
+        self.menubar.addAction(self.menu.menuAction())
+
+        self.title = "<span style=\" font-size:25pt; font-weight:600; color:#ff0000;\" >"
         self.title += "FACE DETECTION SYSTEM"
+
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
-        self.add_face.clicked.connect(self.addface)
-        self.detect_face.clicked.connect(self.detectface)
-        self.delete_face.clicked.connect(self.deleteface)
-
-        self.quit.clicked.connect(self.quitGui)
+        self.capture = cv2.VideoCapture(0)
 
         self.timer = QtCore.QTimer()
-        self.timer.start(1000)
-        self.timer.timeout.connect(self.displayTime)
+        self.timer.timeout.connect(self.update_frame)
+        self.timer.start(5)
+
+        self.timer_1 = QtCore.QTimer()
+        self.timer_1.start(1000)
+        self.timer_1.timeout.connect(self.displayTime)
+
+        self.face_name = None
+        self.enable = None
+
+        self.face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+
+        self.save.clicked.connect(self.save_infor)
+        self.quit.clicked.connect(self.quitGui)
+
+        self.addFace.triggered.connect(self.showAddFaceGui)
+        self.detectFace.triggered.connect(self.showDeleteFaceGui)
+        self.viewInfor.triggered.connect(self.showviewInforGui)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "FACE DETECTION SYSTEM"))
-        self.add_face.setText(_translate("MainWindow", "ADD FACE"))
-        self.textBrowser.setText(_translate("MainWindow", self.title))
-        self.detect_face.setText(_translate("MainWindow", "DETECT FACE"))
-        self.delete_face.setText(_translate("MainWindow", "DELETE FACE"))
-        self.label.setText(_translate("MainWindow", "DATE"))
-        self.label_1.setText(_translate("MainWindow", "TIME"))
-        self.date.setText(_translate("MainWindow", ""))
-        self.time.setText(_translate("MainWindow", ""))
+        MainWindow.setWindowTitle(_translate("MainWindow", "DETECT FACE"))
+
+        self.text.setHtml(_translate("MainWindow", self.title))
+        self.menu.setTitle(_translate("MainWindow", "MENU"))
+        self.addFace.setText(_translate("MainWindow", "Add Face"))
+        self.detectFace.setText(_translate("MainWindow", "Delete Face"))
+        self.viewInfor.setText(_translate("MainWindow", "View Information"))
+
+        self.label.setText(_translate("MainWindow", "INFORMATION"))
+        self.label_2.setText(_translate("MainWindow", "NAME"))
+        self.label_3.setText(_translate("MainWindow", "TIME"))
+        self.label_4.setText(_translate("MainWindow", "DATE"))
+        self.label_5.setText(_translate("MainWindow", "DATE"))
+        self.label_6.setText(_translate("MainWindow", "TIME"))
+
+        self.save.setText(_translate("MainWindow", "SAVE INFORMATION"))
         self.quit.setText(_translate("MainWindow", "QUIT"))
-    
+
     def displayTime(self):
         current_time = QtCore.QTime.currentTime()
         current_date = QtCore.QDate.currentDate()
 
-        self.time.setText(current_time.toString())
-        self.date.setText(current_date.toString())
+        self.time_1.setText(current_time.toString())
+        self.date_1.setText(current_date.toString())
 
-    def addface(self):
+    def update_frame(self):
+        _, self.image=self.capture.read()
+
+        image_detected = self.detect_face(self.image)
+        self.displayImage(image_detected)
+
+    def displayImage(self,img):
+        outImage=QtGui.QImage(img,img.shape[1],img.shape[0],img.strides[0],QtGui.QImage.Format_RGB888)
+
+        outImage=outImage.rgbSwapped()
+      
+        self.webcam.setPixmap(QtGui.QPixmap.fromImage(outImage))
+        self.webcam.setScaledContents(True)
+
+    def detect_face(self, img):
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+        data = pickle.loads(open("encodings.pickle", "rb").read())
+
+        faces = self.face_cascade.detectMultiScale(gray,scaleFactor = 1.1, 
+        minNeighbors=5, minSize=(30, 30),
+        flags = cv2.CASCADE_SCALE_IMAGE)
+
+        boxes = [(y, x + w, y + h, x) for (x, y, w, h) in faces]
+
+        encodings = face_recognition.face_encodings(rgb, boxes)
+
+        names = []
+        name  = ""
+        
+        for encoding in encodings:
+            matches = face_recognition.compare_faces(data["encodings"],
+                encoding)
+            
+            name = "Unknown"
+
+            if True in matches:
+                matchedIdxs = [i for (i, b) in enumerate(matches) if b]
+                counts = {}
+
+                for i in matchedIdxs:
+                    name = data["names"][i]
+                    counts[name] = counts.get(name, 0) + 1
+                name = max(counts, key=counts.get)
+
+            names.append(name)
+
+        for ((top, right, bottom, left), name) in zip(boxes, names):
+            cv2.rectangle(img, (left, top), (right, bottom),
+                (0, 255, 0), 5)
+            y = top - 15 if top - 15 > 15 else top + 15
+    
+            self.face_name = name
+        return img
+    
+    def save_infor(self):
+        current_date = QtCore.QDate.currentDate()
+        current_time = QtCore.QTime.currentTime()
+
+        if self.face_name != "Unknown":
+            self.name .setText(self.face_name)
+            self.time.setText(current_time.toString())
+            self.date.setText(current_date.toString())
+
+            self.msg.setText("Save Information Succesfully!")
+        else:
+            self.msg.setText("Face is not identified!")
+        self.msg.exec()
+
+    def off_webcam(self):
+        self.timer.stop()
+        self.capture.release()
+        cv2.destroyAllWindows()
+
+    def showAddFaceGui(self):
+        self.enable = True
+        self.off_webcam()
         self.add_face_ui = AddFace()
         self.add_face_ui.setupUi(self.add_face_gui)
         self.add_face_gui.show()
-    
-    def detectface(self):
-        self.detect_face_ui = DetectFace()
-        self.detect_face_ui.setupUi(self.detect_face_gui)
-        self.detect_face_gui.show()
-    
-    def deleteface(self):
+
+    def showDeleteFaceGui(self):
         self.delete_face_ui = DeleteFace()
         self.delete_face_ui.setupUi(self.delete_face_gui)
         self.delete_face_gui.show()
 
+    def showviewInforGui(self):
+        pass
+
     def quitGui(self):
+        self.off_webcam()
+
         self.MainWindow.close()
         self.add_face_gui.close()
-        self.detect_face_gui.close()
         self.delete_face_gui.close()
-
+    
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
+    ui = DetectFace()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
