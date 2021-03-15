@@ -24,41 +24,35 @@ class DeleteFace(object):
 
         font = QtGui.QFont('Arial', 12, QtGui.QFont.Bold)
 
-        self.frame = QtWidgets.QFrame(self.centralwidget)
-        self.frame.setGeometry(QtCore.QRect(30, 30, 401, 481))
-        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame.setObjectName("frame")
+        self.box = QtWidgets.QGroupBox(self.centralwidget)
+        self.box.setGeometry(QtCore.QRect(20, 20, 241, 151))
+        self.box.setObjectName("box")
+        self.box.setFont(font)
 
         self.msg = QtWidgets.QMessageBox(self.centralwidget)
         self.msg.setWindowTitle("Message")
         self.msg.setGeometry(QtCore.QRect(240, 230, 500, 500))
 
-        self.ok = QtWidgets.QPushButton(self.centralwidget)
-        self.ok.setGeometry(QtCore.QRect(580, 140, 89, 31))
+        self.ok = QtWidgets.QPushButton(self.box)
+        self.ok.setGeometry(QtCore.QRect(60, 90, 89, 31))
         self.ok.setObjectName("ok")
         self.ok.setStyleSheet("background-color: red")
 
-        self.name = QtWidgets.QLineEdit(self.centralwidget)
-        self.name.setGeometry(QtCore.QRect(540, 90, 171, 31))
+        self.name = QtWidgets.QLineEdit(self.box)
+        self.name.setGeometry(QtCore.QRect(20, 40, 191, 31))
         self.name.setObjectName("name")
 
-        self.label = QtWidgets.QLabel(self.centralwidget)
-        self.label.setGeometry(QtCore.QRect(480, 100, 61, 20))
-        self.label.setObjectName("label")
-        self.label.setFont(font)
+        self.box_2 = QtWidgets.QGroupBox(self.centralwidget)
+        self.box_2.setGeometry(QtCore.QRect(350, 20, 271, 461))
+        self.box_2.setObjectName("box_2")
+        self.box_2.setFont(font)
 
-        self.label_2 = QtWidgets.QLabel(self.frame)
-        self.label_2.setGeometry(QtCore.QRect(160, 10, 131, 41))
-        self.label_2.setObjectName("label_2")
-        self.label_2.setFont(font)
-
-        self.list_face = QtWidgets.QTextBrowser(self.frame)
-        self.list_face.setGeometry(QtCore.QRect(50, 60, 281, 391))
+        self.list_face = QtWidgets.QTextBrowser(self.box_2)
+        self.list_face.setGeometry(QtCore.QRect(20, 40, 221, 391))
         self.list_face.setObjectName("list_face")
 
         self.quit = QtWidgets.QPushButton(self.centralwidget)
-        self.quit.setGeometry(QtCore.QRect(660, 470, 111, 41))
+        self.quit.setGeometry(QtCore.QRect(670, 500, 111, 41))
         self.quit.setObjectName("quit")
         self.quit.setStyleSheet("background-color: red")
 
@@ -92,17 +86,17 @@ class DeleteFace(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "DELETE FACE"))
+        self.box.setTitle(_translate("MainWindow", "Enter name"))
+        self.box_2.setTitle(_translate("MainWindow", "List Name"))
         self.ok.setText(_translate("MainWindow", "OK"))
-        self.label.setText(_translate("MainWindow", "NAME"))
         self.quit.setText(_translate("MainWindow", "QUIT"))
-        self.label_2.setText(_translate("MainWindow", "LIST FACE"))
         self.list_face.setText(_translate("MainWindow", ""))
 
     def showMessage(self):
         if self.status:
             self.msg.setText("Delete face succesfully!")
         else:
-            self.msg.setText("No face of {} in system" .format(self.name.text()))
+            self.msg.setText("Can not find {} in system" .format(self.name.text()))
         self.msg.exec()
     
     def getDataFromImageFile(self):

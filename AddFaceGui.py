@@ -26,83 +26,59 @@ class AddFace(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
 
-        self.MainWindow = MainWindow
+        self.MainWindow = MainWindow 
 
-        self.frame = QtWidgets.QFrame(self.centralwidget)
-        self.frame.setGeometry(QtCore.QRect(20, 20, 521, 531))
-        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame.setObjectName("frame")      
+        font = QtGui.QFont('Arial', 12, QtGui.QFont.Bold)
 
-        self.frame_2 = QtWidgets.QFrame(self.centralwidget)
-        self.frame_2.setGeometry(QtCore.QRect(570, 20, 321, 531))
-        self.frame_2.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_2.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_2.setObjectName("frame_2")  
-        
-        self.frame_3 = QtWidgets.QFrame(self.frame_2)
-        self.frame_3.setGeometry(QtCore.QRect(10, 20, 311, 191))
-        self.frame_3.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_3.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_3.setObjectName("frame_3")  
+        self.box = QtWidgets.QGroupBox(self.centralwidget)
+        self.box.setGeometry(QtCore.QRect(600, 20, 311, 161))
+        self.box.setObjectName("box")  
+        self.box.setFont(font)
+    
+        self.box_2 = QtWidgets.QGroupBox(self.centralwidget)
+        self.box_2.setGeometry(QtCore.QRect(590, 220, 311, 281))
+        self.box_2.setObjectName("box_2")  
+        self.box_2.setFont(font)
 
-        self.frame_4 = QtWidgets.QFrame(self.frame_2)
-        self.frame_4.setGeometry(QtCore.QRect(10, 240, 311, 211))
-        self.frame_4.setFrameShape(QtWidgets.QFrame.StyledPanel)
-        self.frame_4.setFrameShadow(QtWidgets.QFrame.Raised)
-        self.frame_4.setObjectName("frame_4")  
-
-        self.label = QtWidgets.QTextBrowser(self.frame)
+        self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setGeometry(QtCore.QRect(220, 10, 150, 51))
         self.label.setObjectName("label")
 
-        self.webcam = QtWidgets.QLabel(self.frame)
+        self.webcam = QtWidgets.QLabel(self.centralwidget)
         self.webcam.setGeometry(QtCore.QRect(30, 70, 451, 421))
         self.webcam.setText("")
         self.webcam.setObjectName("webcam")
        
         MainWindow.setCentralWidget(self.centralwidget)
 
-        self.name = QtWidgets.QLineEdit(self.frame_3)
-        self.name.setGeometry(70, 30, 161, 31)
+        self.name = QtWidgets.QLineEdit(self.box)
+        self.name.setGeometry(20, 50, 211, 31)
         self.name.setObjectName("name")
-        
-        self.name_2 = QtWidgets.QLabel(self.frame_3)
-        self.name_2.setGeometry(20, 40, 41, 17)
-        self.name_2.setObjectName("name_2")
 
-        self.ok = QtWidgets.QPushButton(self.frame_3)
-        self.ok.setGeometry(70, 90, 161, 41)
+        self.ok = QtWidgets.QPushButton(self.box)
+        self.ok.setGeometry(250, 50, 51, 31)
         self.ok.setObjectName("ok")
         self.ok.setStyleSheet("background-color : red")
 
-        self.train = QtWidgets.QPushButton(self.frame_4)
-        self.train.setGeometry(70, 10, 161, 41)
+        self.train = QtWidgets.QPushButton(self.box_2)
+        self.train.setGeometry(140, 40, 161, 41)
         self.train.setObjectName("train")
         self.train.setStyleSheet("background-color : red")
 
-        self.quit = QtWidgets.QPushButton(self.frame_2)
-        self.quit.setGeometry(190, 470, 131, 41)
+        self.quit = QtWidgets.QPushButton(self.centralwidget)
+        self.quit.setGeometry(800, 520, 131, 41)
         self.quit.setObjectName("quit")
         self.quit.setStyleSheet("background-color: red")
 
-        self.status = QtWidgets.QLabel(self.frame_3)
-        self.status.setGeometry(50, 150, 211, 31)
+        self.status = QtWidgets.QLabel(self.box)
+        self.status.setGeometry(30, 110, 231, 31)
         self.status.setObjectName("status")
 
-        self.status1 = QtWidgets.QTextBrowser(self.frame_4)
-        self.status1.setGeometry(20, 60, 271, 131)
+        self.status1 = QtWidgets.QTextBrowser(self.box_2)
+        self.status1.setGeometry(30, 90, 271, 171)
         self.status1.setObjectName("status1")
 
         self.msg = QtWidgets.QMessageBox(self.centralwidget)
-
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 882, 22))
-        self.menubar.setObjectName("menubar")
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
 
         self.title = "<span style=\" font-size:22pt; font-weight:600; color:#ff0000;\" >"
         self.title += "WEBCAM"
@@ -140,7 +116,8 @@ class AddFace(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "ADD FACE"))
         self.label.setText(_translate("MainWindow", self.title))
-        self.name_2.setText(_translate("MainWindow", "NAME"))
+        self.box.setTitle(_translate("MainWindow", "Enter Name"))
+        self.box_2.setTitle(_translate("MainWindow", "Training"))
         self.ok.setText(_translate("MainWindow", "OK"))
         self.train.setText(_translate("MainWindow", "TRAINING"))
         self.status.setText(_translate("MainWindow", ""))
@@ -149,6 +126,7 @@ class AddFace(object):
 
     def update_frame(self):
         _, self.image=self.capture.read()
+        self.detect_face()
         self.displayImage(self.image)
 
     def displayImage(self,img):
@@ -161,7 +139,10 @@ class AddFace(object):
 
     def detect_face(self):
         self.faces = self.face_cascade.detectMultiScale(self.image, 1.5, 5)
-
+        
+        for (x, y, w, h) in self.faces:
+            cv2.rectangle(self.image, (x, y), (x+w, y+h), (0, 255, 0), 5)
+        
     def inList(self, image, img_arr):
         check = 0
         for i in img_arr:
@@ -292,9 +273,12 @@ class AddFace(object):
                 cv2.imwrite('Dataset/{}/{}.jpg' .format(self.name.text(), self.run), self.roi)
 
                 self.status.setText("Saved Face Succesfully!")
-                self.timer1.start(1000)
-                self.timer1.timeout.connect(self.showMessage)
-
+            else:
+                self.status.setText("Saved Face Failed!")
+            
+            self.timer1.start(1000)
+            self.timer1.timeout.connect(self.showMessage)
+                
             if not os.path.exists('images.pickle'):
                 f = open('images.pickle', 'wb')
                 f.close()

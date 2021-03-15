@@ -14,47 +14,11 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QPushButton" name="ok">
-    <property name="geometry">
-     <rect>
-      <x>580</x>
-      <y>140</y>
-      <width>89</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>OK</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="name">
-    <property name="geometry">
-     <rect>
-      <x>540</x>
-      <y>90</y>
-      <width>171</width>
-      <height>31</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>480</x>
-      <y>100</y>
-      <width>61</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Name</string>
-    </property>
-   </widget>
    <widget class="QPushButton" name="ok_2">
     <property name="geometry">
      <rect>
-      <x>660</x>
-      <y>470</y>
+      <x>670</x>
+      <y>500</y>
       <width>111</width>
       <height>41</height>
      </rect>
@@ -63,42 +27,62 @@
      <string>QUIT</string>
     </property>
    </widget>
-   <widget class="QFrame" name="frame">
+   <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>20</x>
       <y>20</y>
-      <width>401</width>
-      <height>481</height>
+      <width>241</width>
+      <height>151</height>
      </rect>
     </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
+    <property name="title">
+     <string>Enter name</string>
     </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
+    <widget class="QPushButton" name="ok">
+     <property name="geometry">
+      <rect>
+       <x>60</x>
+       <y>90</y>
+       <width>89</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>OK</string>
+     </property>
+    </widget>
+    <widget class="QLineEdit" name="name">
+     <property name="geometry">
+      <rect>
+       <x>20</x>
+       <y>40</y>
+       <width>191</width>
+       <height>31</height>
+      </rect>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_2">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>20</y>
+      <width>271</width>
+      <height>461</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>List Name</string>
     </property>
     <widget class="QTextBrowser" name="list_face">
      <property name="geometry">
       <rect>
-       <x>50</x>
-       <y>60</y>
-       <width>281</width>
+       <x>20</x>
+       <y>40</y>
+       <width>221</width>
        <height>391</height>
       </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="label_2">
-     <property name="geometry">
-      <rect>
-       <x>160</x>
-       <y>10</y>
-       <width>131</width>
-       <height>41</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>LIST FACE</string>
      </property>
     </widget>
    </widget>
