@@ -139,10 +139,10 @@ class AddFace(object):
 
     def detect_face(self):
         self.faces = self.face_cascade.detectMultiScale(self.image, 1.5, 5)
-        
+
         for (x, y, w, h) in self.faces:
             cv2.rectangle(self.image, (x, y), (x+w, y+h), (0, 255, 0), 5)
-        
+
     def inList(self, image, img_arr):
         check = 0
         for i in img_arr:
