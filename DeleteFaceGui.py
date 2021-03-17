@@ -11,7 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 import os
 import pickle
-import numpy as np
+
 
 class DeleteFace(object):
     def setupUi(self, MainWindow):
@@ -151,6 +151,7 @@ class DeleteFace(object):
             self.image_path = "Dataset/" + self.faceName
 
             if os.path.exists(self.image_path):
+                self.delete_face_in_file()
                 self.status = True
                 self.processImageFile()
                 images = os.listdir(self.image_path)
@@ -164,7 +165,16 @@ class DeleteFace(object):
             self.showListFace()
 
         self.name.setText("")
-    
+
+    def delete_face_in_file(self):
+        with open("information.txt", "r") as f:
+            lines = f.readlines()
+
+        with open("information.txt", "w") as f:
+            for line in lines:
+                if line[:line.index("\t")] != self.name.text():
+                    f.write(line)
+
     def showListFace(self):
         self.getDataFromImageFile()
         self.list_face.setText("")

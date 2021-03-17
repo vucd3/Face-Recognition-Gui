@@ -138,11 +138,12 @@ class AddFace(object):
         self.webcam.setScaledContents(True)
 
     def detect_face(self):
-        self.faces = self.face_cascade.detectMultiScale(self.image, 1.5, 5)
-
+        gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
+        self.faces = self.face_cascade.detectMultiScale(gray, 1.5, 5)
+        
         for (x, y, w, h) in self.faces:
             cv2.rectangle(self.image, (x, y), (x+w, y+h), (0, 255, 0), 5)
-
+        
     def inList(self, image, img_arr):
         check = 0
         for i in img_arr:
@@ -210,7 +211,7 @@ class AddFace(object):
             # load the input image and convert it from RGB (OpenCV ordering)
             # to dlib ordering (RGB)
             image = cv2.imread(imagePath)
-            if self.inList(image, self.image_saved) == False:
+            if not self.inList(image, self.image_saved):
                 rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
                 self.status1.append("[INFO] Processing image of {} {}/{}".format(name, self.getIndex(imagePath), 
                     len(os.listdir("Dataset/"+name))))

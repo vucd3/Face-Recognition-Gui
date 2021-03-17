@@ -71,14 +71,6 @@ class Ui_MainWindow(object):
         self.delete_face.setStyleSheet("background-color: red")
 
         MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 22))
-        self.menubar.setObjectName("menubar")
-        
-        MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
 
         self.add_face_gui = QtWidgets.QMainWindow()
         self.detect_face_gui = QtWidgets.QMainWindow()

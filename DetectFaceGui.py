@@ -13,7 +13,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import cv2
 import face_recognition
 import imutils
-import time
 import pickle
 
 class DetectFace(object):
@@ -118,17 +117,19 @@ class DetectFace(object):
         self.capture = cv2.VideoCapture(0)
 
         self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.update_frame)
         self.timer.start(5)
+        self.timer.timeout.connect(self.update_frame)
 
         self.timer_1 = QtCore.QTimer()
         self.timer_1.start(1000)
         self.timer_1.timeout.connect(self.displayTime)
         
+        self.face = None
         self.face_name = None
 
         self.faceEnable = None
 
+        self.image_detected = None
         self.face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
         self.save.clicked.connect(self.save_infor)
@@ -159,8 +160,8 @@ class DetectFace(object):
 
     def update_frame(self):
         _, self.image = self.capture.read()
-        image_detected = self.detect_face(self.image)
-        self.displayImage(image_detected)
+        self.image_detected = self.detect_face(self.image)
+        self.displayImage(self.image_detected)
 
     def displayImage(self,img):
         outImage=QtGui.QImage(img,img.shape[1],img.shape[0],img.strides[0],QtGui.QImage.Format_RGB888)
@@ -169,27 +170,32 @@ class DetectFace(object):
       
         self.webcam.setPixmap(QtGui.QPixmap.fromImage(outImage))
         self.webcam.setScaledContents(True)
-
+    
     def detect_face(self, img):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        #rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        self.faces = self.face_cascade.detectMultiScale(gray,scaleFactor = 1.1, 
+            minNeighbors=5)
+            
+        for (x, y, w, h) in self.faces:
+            cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 5)
+
+        return img
+
+    def recognize_face(self, img):
         rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        data = pickle.loads(open("encodings.pickle", "rb").read())
+        data = pickle.loads(open("encodings.pickle", "rb").read())    
 
-        faces = self.face_cascade.detectMultiScale(gray,scaleFactor = 1.1, 
-        minNeighbors=5, minSize=(30, 30),
-        flags = cv2.CASCADE_SCALE_IMAGE)
-
-        if len(faces) > 0:
+        if len(self.faces) > 0:
             self.faceEnable = True
         else:
             self.faceEnable = False
 
-        boxes = [(y, x + w, y + h, x) for (x, y, w, h) in faces]
+        boxes = [(y, x + w, y + h, x) for (x, y, w, h) in self.faces]
 
         encodings = face_recognition.face_encodings(rgb, boxes)
 
-        names = []
         name  = ""
         
         for encoding in encodings:
@@ -207,32 +213,33 @@ class DetectFace(object):
                     counts[name] = counts.get(name, 0) + 1
                 name = max(counts, key=counts.get)
 
-            names.append(name)
-
-        for ((top, right, bottom, left), name) in zip(boxes, names):
-            cv2.rectangle(img, (left, top), (right, bottom),
-                (0, 255, 0), 5)
-            y = top - 15 if top - 15 > 15 else top + 15
-    
-            self.face_name = name
-        return img
+            if name != "Unknown":
+                return name
+        return name
     
     def save_infor(self):
+        name = self.recognize_face(self.image_detected)
+
         current_date = QtCore.QDate.currentDate()
         current_time = QtCore.QTime.currentTime()
-
+        
         if self.faceEnable:
-            if self.face_name != "Unknown":
-                self.name .setText(self.face_name)
+            if name != "Unknown":
+                self.name .setText(name)
                 self.time.setText(current_time.toString())
                 self.date.setText(current_date.toString())
-
+                self.save_infor_to_file(name, current_date, current_time)
                 self.msg.setText("Save your information succesfully!")
             else:
                 self.msg.setText("System can not identify your face!")
         else:
             self.msg.setText("System can not detect your face!")
         self.msg.exec()
+    
+    def save_infor_to_file(self, name, date, time):
+        f = open("information.txt", "a+")
+        f.write(name + "\t\t" + date.toString() + "\t" 
+        + time.toString() + "\n")
 
     def off_webcam(self):
         self.timer.stop()
