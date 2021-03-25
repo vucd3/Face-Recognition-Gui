@@ -10,15 +10,17 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+import os
 import cv2
 import face_recognition
 import imutils
 import pickle
+import numpy as np
 
 class DetectFace(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(942, 612)
+        MainWindow.resize(1024, 600)
 
         self.MainWindow = MainWindow
 
@@ -34,18 +36,18 @@ class DetectFace(object):
         self.msg.setWindowTitle("Message")
         self.msg.setGeometry(QtCore.QRect(230, 180, 256, 121))
 
-        self.text = QtWidgets.QTextBrowser(self.centralwidget)
-        self.text.setGeometry(QtCore.QRect(200, 30, 171, 51))
+        self.text = QtWidgets.QLabel(self.centralwidget)
+        self.text.setGeometry(QtCore.QRect(210, 10, 121, 31))
         self.text.setObjectName("text")
         self.text.setStyleSheet("background-color: yellow")
 
         self.webcam = QtWidgets.QLabel(self.centralwidget)
-        self.webcam.setGeometry(QtCore.QRect(30, 110, 521, 401))
+        self.webcam.setGeometry(QtCore.QRect(60, 50, 450, 450))
         self.webcam.setText("")
         self.webcam.setObjectName("webcam")
 
         self.box = QtWidgets.QGroupBox(self.centralwidget)
-        self.box.setGeometry(QtCore.QRect(630, 240, 301, 221))
+        self.box.setGeometry(QtCore.QRect(670, 160, 301, 221))
         self.box.setObjectName("box")
         self.box.setFont(font)
 
@@ -97,18 +99,18 @@ class DetectFace(object):
         self.time_1.setFont(font)
 
         self.save = QtWidgets.QPushButton(self.centralwidget)
-        self.save.setGeometry(QtCore.QRect(10, 530, 551, 31))
+        self.save.setGeometry(QtCore.QRect(60, 510, 450, 40))
         self.save.setObjectName("save")
         self.save.setStyleSheet("background-color: red")
 
         self.quit = QtWidgets.QPushButton(self.centralwidget)
-        self.quit.setGeometry(QtCore.QRect(820, 520, 111, 41))
+        self.quit.setGeometry(QtCore.QRect(860, 470, 141, 61))
         self.quit.setObjectName("quit")
         self.quit.setStyleSheet("background-color: red")
 
         MainWindow.setCentralWidget(self.centralwidget)
 
-        self.title = "<span style=\" font-size:25pt; font-weight:600; color:#ff0000;\" >"
+        self.title = "<span style=\" font-size:16pt; font-weight:600; color:#ff0000;\" >"
         self.title += "WEBCAM"
 
         self.retranslateUi(MainWindow)
@@ -124,7 +126,6 @@ class DetectFace(object):
         self.timer_1.start(1000)
         self.timer_1.timeout.connect(self.displayTime)
         
-        self.face = None
         self.face_name = None
 
         self.faceEnable = None
@@ -140,7 +141,7 @@ class DetectFace(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "DETECT FACE"))
 
-        self.text.setHtml(_translate("MainWindow", self.title))
+        self.text.setText(_translate("MainWindow", self.title))
         self.box.setTitle(_translate("MainWindow", "Information"))
         self.label_2.setText(_translate("MainWindow", "NAME"))
         self.label_3.setText(_translate("MainWindow", "TIME"))
@@ -148,7 +149,7 @@ class DetectFace(object):
         self.label_5.setText(_translate("MainWindow", "DATE"))
         self.label_6.setText(_translate("MainWindow", "TIME"))
 
-        self.save.setText(_translate("MainWindow", "SAVE INFORMATION"))
+        self.save.setText(_translate("MainWindow", "CHECK IN/CHECK OUT"))
         self.quit.setText(_translate("MainWindow", "QUIT"))
 
     def displayTime(self):
@@ -160,8 +161,10 @@ class DetectFace(object):
 
     def update_frame(self):
         _, self.image = self.capture.read()
-        self.image_detected = self.detect_face(self.image)
-        self.displayImage(self.image_detected)
+        self.resize_c = cv2.resize(self.image, (1024, 600))
+        self.resize = cv2.resize(self.image, (1024, 600))
+        self.detect_face()
+        self.displayImage(self.resize)
 
     def displayImage(self,img):
         outImage=QtGui.QImage(img,img.shape[1],img.shape[0],img.strides[0],QtGui.QImage.Format_RGB888)
@@ -171,20 +174,16 @@ class DetectFace(object):
         self.webcam.setPixmap(QtGui.QPixmap.fromImage(outImage))
         self.webcam.setScaledContents(True)
     
-    def detect_face(self, img):
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        #rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    def detect_face(self):
+        gray = cv2.cvtColor(self.resize, cv2.COLOR_BGR2GRAY)
         self.faces = self.face_cascade.detectMultiScale(gray,scaleFactor = 1.1, 
-            minNeighbors=5)
-            
+            minNeighbors=5, minSize=(100, 100))
+        
         for (x, y, w, h) in self.faces:
-            cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 5)
-
-        return img
-
+            cv2.rectangle(self.resize, (x, y), (x+w, y+h), (0, 255, 0), 5)
+        
     def recognize_face(self, img):
         rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
         data = pickle.loads(open("encodings.pickle", "rb").read())    
 
         if len(self.faces) > 0:
@@ -193,17 +192,16 @@ class DetectFace(object):
             self.faceEnable = False
 
         boxes = [(y, x + w, y + h, x) for (x, y, w, h) in self.faces]
-
+        #boxes = face_recognition.face_locations(rgb, model='hog')
         encodings = face_recognition.face_encodings(rgb, boxes)
 
-        name  = ""
-        
+        name = ""
         for encoding in encodings:
             matches = face_recognition.compare_faces(data["encodings"],
                 encoding)
-            
+            ''' 
             name = "Unknown"
-
+        
             if True in matches:
                 matchedIdxs = [i for (i, b) in enumerate(matches) if b]
                 counts = {}
@@ -213,18 +211,32 @@ class DetectFace(object):
                     counts[name] = counts.get(name, 0) + 1
                 name = max(counts, key=counts.get)
 
-            if name != "Unknown":
-                return name
+                list_images = os.listdir("Dataset/"+name)
+                a = counts[name]/len(list_images)
+                if a < 0.7:
+                    name = "Unknown" 
+            '''
+
+            name = "Unknown"
+            face_distances = face_recognition.face_distance(data["encodings"], encoding)
+            best_match_index = np.argmin(face_distances)
+
+            if matches[best_match_index] and face_distances[best_match_index] < 0.35:
+                name = data["names"][best_match_index]
         return name
-    
+            
     def save_infor(self):
-        name = self.recognize_face(self.image_detected)
+        self.name .setText("")
+        self.time.setText("")
+        self.date.setText("")
+
+        name = self.recognize_face(self.resize_c)
 
         current_date = QtCore.QDate.currentDate()
         current_time = QtCore.QTime.currentTime()
         
         if self.faceEnable:
-            if name != "Unknown":
+            if name != "Unknown" and name != "":
                 self.name .setText(name)
                 self.time.setText(current_time.toString())
                 self.date.setText(current_date.toString())
@@ -248,6 +260,7 @@ class DetectFace(object):
 
     def quitGui(self):
         self.off_webcam()
+        self.timer_1.stop()
         self.MainWindow.close()
 
 if __name__ == "__main__":

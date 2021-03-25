@@ -16,7 +16,7 @@ import pickle
 class DeleteFace(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
+        MainWindow.resize(1024, 600)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
 
@@ -25,7 +25,7 @@ class DeleteFace(object):
         font = QtGui.QFont('Arial', 12, QtGui.QFont.Bold)
 
         self.box = QtWidgets.QGroupBox(self.centralwidget)
-        self.box.setGeometry(QtCore.QRect(20, 20, 241, 151))
+        self.box.setGeometry(QtCore.QRect(70, 50, 461, 291))
         self.box.setObjectName("box")
         self.box.setFont(font)
 
@@ -33,17 +33,162 @@ class DeleteFace(object):
         self.msg.setWindowTitle("Message")
         self.msg.setGeometry(QtCore.QRect(240, 230, 500, 500))
 
-        self.ok = QtWidgets.QPushButton(self.box)
-        self.ok.setGeometry(QtCore.QRect(60, 90, 89, 31))
+        self.frame = QtWidgets.QFrame(self.box)
+        self.frame.setGeometry(20, 140, 431, 131)
+        self.frame.setFrameShape(QtWidgets.QFrame.StyledPanel)
+        self.frame.setObjectName("frame")
+
+        self.q = QtWidgets.QPushButton(self.frame)
+        self.q.setGeometry(20, 10, 21, 25)
+        self.q.setObjectName("q")
+        self.q.clicked.connect(self.keyQ)
+
+        self.w = QtWidgets.QPushButton(self.frame)
+        self.w.setGeometry(60, 10, 21, 25)
+        self.w.setObjectName("w")
+        self.w.clicked.connect(self.keyW)
+
+        self.e = QtWidgets.QPushButton(self.frame)
+        self.e.setGeometry(100, 10, 21, 25)
+        self.e.setObjectName("e")
+        self.e.clicked.connect(self.keyE)
+
+        self.r = QtWidgets.QPushButton(self.frame)
+        self.r.setGeometry(140, 10, 21, 25)
+        self.r.setObjectName("r")
+        self.r.clicked.connect(self.keyR)
+
+        self.t = QtWidgets.QPushButton(self.frame)
+        self.t.setGeometry(180, 10, 21, 25)
+        self.t.setObjectName("t")
+        self.t.clicked.connect(self.keyT)
+
+        self.y = QtWidgets.QPushButton(self.frame)
+        self.y.setGeometry(220, 10, 21, 25)
+        self.y.setObjectName("y")
+        self.y.clicked.connect(self.keyY)
+
+        self.u = QtWidgets.QPushButton(self.frame)
+        self.u.setGeometry(260, 10, 21, 25)
+        self.u.setObjectName("u")
+        self.u.clicked.connect(self.keyU)
+
+        self.i = QtWidgets.QPushButton(self.frame)
+        self.i.setGeometry(300, 10, 21, 25)
+        self.i.setObjectName("i")
+        self.i.clicked.connect(self.keyI)
+
+        self.o = QtWidgets.QPushButton(self.frame)
+        self.o.setGeometry(340, 10, 21, 25)
+        self.o.setObjectName("i")
+        self.o.clicked.connect(self.keyI)
+
+        self.p = QtWidgets.QPushButton(self.frame)
+        self.p.setGeometry(380, 10, 21, 25)
+        self.p.setObjectName("p")
+        self.p.clicked.connect(self.keyP)
+
+        self.a = QtWidgets.QPushButton(self.frame)
+        self.a.setGeometry(20, 50, 21, 25)
+        self.a.setObjectName("a")
+        self.a.clicked.connect(self.keyA)
+
+        self.s = QtWidgets.QPushButton(self.frame)
+        self.s.setGeometry(60, 50, 21, 25)
+        self.s.setObjectName("s")
+        self.s.clicked.connect(self.keyS)
+
+        self.d = QtWidgets.QPushButton(self.frame)
+        self.d.setGeometry(100, 50, 21, 25)
+        self.d.setObjectName("d")
+        self.d.clicked.connect(self.keyD)
+
+        self.f = QtWidgets.QPushButton(self.frame)
+        self.f.setGeometry(140, 50, 21, 25)
+        self.f.setObjectName("f")
+        self.f.clicked.connect(self.keyF)
+
+        self.g = QtWidgets.QPushButton(self.frame)
+        self.g.setGeometry(180, 50, 21, 25)
+        self.g.setObjectName("g")
+        self.g.clicked.connect(self.keyG)
+
+        self.h = QtWidgets.QPushButton(self.frame)
+        self.h.setGeometry(220, 50, 21, 25)
+        self.h.setObjectName("h")
+        self.h.clicked.connect(self.keyH)
+
+        self.j = QtWidgets.QPushButton(self.frame)
+        self.j.setGeometry(260, 50, 21, 25)
+        self.j.setObjectName("j")
+        self.j.clicked.connect(self.keyJ)
+
+        self.k = QtWidgets.QPushButton(self.frame)
+        self.k.setGeometry(300, 50, 21, 25)
+        self.k.setObjectName("k")
+        self.k.clicked.connect(self.keyK)
+
+        self.l = QtWidgets.QPushButton(self.frame)
+        self.l.setGeometry(340, 50, 21, 25)
+        self.l.setObjectName("l")
+        self.l.clicked.connect(self.keyL)
+
+        self.dele = QtWidgets.QPushButton(self.frame)
+        self.dele.setGeometry(380, 50, 31, 25)
+        self.dele.setObjectName("dele")
+        self.dele.clicked.connect(self.keyDele)
+
+        self.z = QtWidgets.QPushButton(self.frame)
+        self.z.setGeometry(20, 90, 21, 25)
+        self.z.setObjectName("z")
+        self.z.clicked.connect(self.keyZ)
+
+        self.x = QtWidgets.QPushButton(self.frame)
+        self.x.setGeometry(60, 90, 21, 25)
+        self.x.setObjectName("x")
+        self.x.clicked.connect(self.keyX)
+
+        self.c = QtWidgets.QPushButton(self.frame)
+        self.c.setGeometry(100, 90, 21, 25)
+        self.c.setObjectName("c")
+        self.c.clicked.connect(self.keyC)
+
+        self.space = QtWidgets.QPushButton(self.frame)
+        self.space.setGeometry(140, 90, 41, 25)
+        self.space.setObjectName("space")
+        self.space.clicked.connect(self.keySpace)
+
+        self.v = QtWidgets.QPushButton(self.frame)
+        self.v.setGeometry(200, 90, 21, 25)
+        self.v.setObjectName("v")
+        self.v.clicked.connect(self.keyV)
+
+        self.b = QtWidgets.QPushButton(self.frame)
+        self.b.setGeometry(240, 90, 21, 25)
+        self.b.setObjectName("b")
+        self.b.clicked.connect(self.keyB)
+
+        self.n = QtWidgets.QPushButton(self.frame)
+        self.n.setGeometry(280, 90, 21, 25)
+        self.n.setObjectName("n")
+        self.n.clicked.connect(self.keyN)
+
+        self.m = QtWidgets.QPushButton(self.frame)
+        self.m.setGeometry(320, 90, 21, 25)
+        self.m.setObjectName("m")
+        self.m.clicked.connect(self.keyM)
+
+        self.ok = QtWidgets.QPushButton(self.frame)
+        self.ok.setGeometry(QtCore.QRect(370, 90, 51, 31))
         self.ok.setObjectName("ok")
         self.ok.setStyleSheet("background-color: red")
 
         self.name = QtWidgets.QLineEdit(self.box)
-        self.name.setGeometry(QtCore.QRect(20, 40, 191, 31))
+        self.name.setGeometry(QtCore.QRect(50, 50, 231, 41))
         self.name.setObjectName("name")
 
         self.box_2 = QtWidgets.QGroupBox(self.centralwidget)
-        self.box_2.setGeometry(QtCore.QRect(350, 20, 271, 461))
+        self.box_2.setGeometry(QtCore.QRect(580, 10, 271, 461))
         self.box_2.setObjectName("box_2")
         self.box_2.setFont(font)
 
@@ -52,7 +197,7 @@ class DeleteFace(object):
         self.list_face.setObjectName("list_face")
 
         self.quit = QtWidgets.QPushButton(self.centralwidget)
-        self.quit.setGeometry(QtCore.QRect(670, 500, 111, 41))
+        self.quit.setGeometry(QtCore.QRect(870, 480, 141, 61))
         self.quit.setObjectName("quit")
         self.quit.setStyleSheet("background-color: red")
 
@@ -60,6 +205,8 @@ class DeleteFace(object):
     
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+        self.string_name = ""
 
         self.status = True
         self.image_saved = []
@@ -84,6 +231,146 @@ class DeleteFace(object):
         self.ok.setText(_translate("MainWindow", "OK"))
         self.quit.setText(_translate("MainWindow", "QUIT"))
         self.list_face.setText(_translate("MainWindow", ""))
+        self.q.setText(_translate("MainWindow", "Q"))
+        self.w.setText(_translate("MainWindow", "W"))
+        self.e.setText(_translate("MainWindow", "E"))
+        self.r.setText(_translate("MainWindow", "R"))
+        self.t.setText(_translate("MainWindow", "T"))
+        self.y.setText(_translate("MainWindow", "Y"))
+        self.u.setText(_translate("MainWindow", "U"))
+        self.i.setText(_translate("MainWindow", "I"))
+        self.o.setText(_translate("MainWindow", "O"))
+        self.p.setText(_translate("MainWindow", "P"))
+        self.a.setText(_translate("MainWindow", "A"))
+        self.s.setText(_translate("MainWindow", "S"))
+        self.d.setText(_translate("MainWindow", "D"))
+        self.f.setText(_translate("MainWindow", "F"))
+        self.g.setText(_translate("MainWindow", "G"))
+        self.h.setText(_translate("MainWindow", "H"))
+        self.j.setText(_translate("MainWindow", "J"))
+        self.k.setText(_translate("MainWindow", "K"))
+        self.l.setText(_translate("MainWindow", "L"))
+        self.dele.setText(_translate("MainWindow", "del"))
+        self.z.setText(_translate("MainWindow", "Z"))
+        self.x.setText(_translate("MainWindow", "X"))
+        self.c.setText(_translate("MainWindow", "C"))
+        self.space.setText(_translate("MainWindow", ""))
+        self.v.setText(_translate("MainWindow", "V"))
+        self.b.setText(_translate("MainWindow", "B"))
+        self.n.setText(_translate("MainWindow", "N"))
+        self.m.setText(_translate("MainWindow", "M"))
+    
+    def keyQ(self):
+        self.string_name += "Q"
+        self.name.setText(self.string_name)
+
+    def keyW(self):
+        self.string_name += "B"
+        self.name.setText(self.string_name)
+
+    def keyE(self):
+        self.string_name += "E"
+        self.name.setText(self.string_name)
+
+    def keyR(self):
+        self.string_name += "R"
+        self.name.setText(self.string_name)
+
+    def keyT(self):
+        self.string_name += "T"
+        self.name.setText(self.string_name)       
+    
+    def keyY(self):
+        self.string_name += "Y"
+        self.name.setText(self.string_name) 
+
+    def keyU(self):
+        self.string_name += "U"
+        self.name.setText(self.string_name)             
+
+    def keyI(self):
+        self.string_name += "I"
+        self.name.setText(self.string_name)
+
+    def keyO(self):
+        self.string_name += "O"
+        self.name.setText(self.string_name)
+
+    def keyP(self):
+        self.string_name += "P"
+        self.name.setText(self.string_name)
+
+    def keyA(self):
+        self.string_name += "A"
+        self.name.setText(self.string_name)                
+
+    def keyS(self):
+        self.string_name += "S"
+        self.name.setText(self.string_name)    
+
+    def keyD(self):
+        self.string_name += "T"
+        self.name.setText(self.string_name)   
+
+    def keyF(self):
+        self.string_name += "F"
+        self.name.setText(self.string_name)   
+
+    def keyG(self):
+        self.string_name += "G"
+        self.name.setText(self.string_name)       
+
+    def keyH(self):
+        self.string_name += "H"
+        self.name.setText(self.string_name)
+
+    def keyJ(self):
+        self.string_name += "J"
+        self.name.setText(self.string_name)
+
+    def keyK(self):
+        self.string_name += "K"
+        self.name.setText(self.string_name)
+
+    def keyL(self):
+        self.string_name += "L"
+        self.name.setText(self.string_name)
+
+    def keyDele(self):
+        self.string_name = self.string_name[:len(self.string_name)-1]
+        self.name.setText(self.string_name) 
+
+    def keyZ(self):
+        self.string_name += "Z"
+        self.name.setText(self.string_name) 
+
+    def keyX(self):
+        self.string_name += "X"
+        self.name.setText(self.string_name)
+
+    def keyC(self):
+        self.string_name += "C"
+        self.name.setText(self.string_name)
+
+    def keySpace(self):
+        self.string_name += " "
+        self.name.setText(self.string_name) 
+
+    def keyV(self):
+        self.string_name += "V"
+        self.name.setText(self.string_name)
+
+    def keyB(self):
+        self.string_name += "B"
+        self.name.setText(self.string_name)
+
+    def keyN(self):
+        self.string_name += "N"
+        self.name.setText(self.string_name)
+
+    def keyM(self):
+        self.string_name += "M"
+        self.name.setText(self.string_name)   
 
     def showMessage(self):
         if self.status:
@@ -157,7 +444,9 @@ class DeleteFace(object):
             self.showMessage()
             self.showListFace()
 
-        self.name.setText("")
+        self.string_name = ""
+        self.name.setText(self.string_name)
+        
 
     def delete_face_in_file(self):
         with open("information.txt", "r") as f:
