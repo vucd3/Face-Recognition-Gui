@@ -9,7 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from skimage.feature import local_binary_pattern
 import os
 import cv2
 import face_recognition
@@ -23,9 +23,6 @@ class DetectFace(object):
         MainWindow.resize(1024, 600)
 
         self.MainWindow = MainWindow
-
-        self.add_face_gui = QtWidgets.QMainWindow()
-        self.delete_face_gui = QtWidgets.QMainWindow()
 
         font = QtGui.QFont('Arial', 12, QtGui.QFont.Bold)
 
@@ -127,10 +124,11 @@ class DetectFace(object):
         self.timer_1.timeout.connect(self.displayTime)
         
         self.face_name = None
-
         self.faceEnable = None
-
+        self.model = None
+        self.gray = None
         self.image_detected = None
+        
         self.face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
         self.save.clicked.connect(self.save_infor)
@@ -175,7 +173,7 @@ class DetectFace(object):
         self.webcam.setScaledContents(True)
     
     def detect_face(self):
-        gray = cv2.cvtColor(self.resize, cv2.COLOR_BGR2GRAY)
+        self.gray = cv2.cvtColor(self.resize, cv2.COLOR_BGR2GRAY)
         self.faces = self.face_cascade.detectMultiScale(gray,scaleFactor = 1.1, 
             minNeighbors=5, minSize=(100, 100))
         
@@ -216,7 +214,6 @@ class DetectFace(object):
                 if a < 0.7:
                     name = "Unknown" 
             '''
-
             name = "Unknown"
             face_distances = face_recognition.face_distance(data["encodings"], encoding)
             best_match_index = np.argmin(face_distances)
@@ -224,24 +221,44 @@ class DetectFace(object):
             if matches[best_match_index] and face_distances[best_match_index] < 0.35:
                 name = data["names"][best_match_index]
         return name
-            
+    
+    def antispoofing(self):
+        with open("svm_model.pkl", "rb") as f:
+            self.model = pickle.load(f)
+
+        for (x, y, w, h) in self.faces:
+            roi = self.gray[y:y+h, x:x+w]
+
+        lbp = local_binary_pattern(roi, 24, 8, method='uniform')
+        
+        (hist, _) = np.histogram(lbp.ravel(), bins=np.arange(0, 27), range=(0, 5))
+        hist = hist.astype("float")
+        hist /= (hist.sum() + (1e-7))
+        prediction = self.model.predict(hist.reshape(1, -1))
+
+        return prediction[0]
+
     def save_infor(self):
         self.name .setText("")
         self.time.setText("")
         self.date.setText("")
-
+        
+        predict = self.antispoofing()
         name = self.recognize_face(self.resize_c)
 
         current_date = QtCore.QDate.currentDate()
         current_time = QtCore.QTime.currentTime()
         
         if self.faceEnable:
-            if name != "Unknown" and name != "":
-                self.name .setText(name)
-                self.time.setText(current_time.toString())
-                self.date.setText(current_date.toString())
-                self.save_infor_to_file(name, current_date, current_time)
-                self.msg.setText("Save your information succesfully!")
+            if predict == "real_face":
+                if name != "Unknown" and name != "":
+                    self.name .setText(name)
+                    self.time.setText(current_time.toString())
+                    self.date.setText(current_date.toString())
+                    self.save_infor_to_file(name, current_date, current_time)
+                    self.msg.setText("Save your information succesfully!")
+                else:
+                    self.msg.setText("System can not identify your face!")
             else:
                 self.msg.setText("System can not identify your face!")
         else:
