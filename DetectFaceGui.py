@@ -125,7 +125,7 @@ class DetectFace(object):
         
         self.face_name = None
         self.faceEnable = None
-        self.model = None
+
         self.gray = None
         self.image_detected = None
         
@@ -197,23 +197,7 @@ class DetectFace(object):
         for encoding in encodings:
             matches = face_recognition.compare_faces(data["encodings"],
                 encoding)
-            ''' 
-            name = "Unknown"
-        
-            if True in matches:
-                matchedIdxs = [i for (i, b) in enumerate(matches) if b]
-                counts = {}
-
-                for i in matchedIdxs:
-                    name = data["names"][i]
-                    counts[name] = counts.get(name, 0) + 1
-                name = max(counts, key=counts.get)
-
-                list_images = os.listdir("Dataset/"+name)
-                a = counts[name]/len(list_images)
-                if a < 0.7:
-                    name = "Unknown" 
-            '''
+          
             name = "Unknown"
             face_distances = face_recognition.face_distance(data["encodings"], encoding)
             best_match_index = np.argmin(face_distances)
@@ -223,20 +207,31 @@ class DetectFace(object):
         return name
     
     def antispoofing(self):
-        with open("svm_model.pkl", "rb") as f:
-            self.model = pickle.load(f)
+        predict = ""
+        lower = np.array([0, 48, 80], dtype = "uint8")
+        upper = np.array([20, 255, 255], dtype = "uint8")
 
         for (x, y, w, h) in self.faces:
-            roi = self.gray[y:y+h, x:x+w]
-
-        lbp = local_binary_pattern(roi, 24, 8, method='uniform')
+            roi = self.resize_c[y:y+h, x:x+w]
         
-        (hist, _) = np.histogram(lbp.ravel(), bins=np.arange(0, 27), range=(0, 5))
-        hist = hist.astype("float")
-        hist /= (hist.sum() + (1e-7))
-        prediction = self.model.predict(hist.reshape(1, -1))
+        converted = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+        skinMask = cv2.inRange(converted, lower, upper)
 
-        return prediction[0]
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        skinMask = cv2.erode(skinMask, kernel, iterations = 1)
+
+        skinMask = cv2.dilate(skinMask, kernel, iterations = 1)
+
+        skinMask = cv2.GaussianBlur(skinMask, (5, 5), 0)
+        skin = cv2.bitwise_and(roi, roi, mask = skinMask) 
+        
+
+        if np.count_nonzero(skin) > 20000 and roi.shape[0] < 350 and roi.shape[1] < 350:
+            predict = "real_face"
+        else:
+            predict = "fake_face"
+
+        return predict
 
     def save_infor(self):
         self.name .setText("")
