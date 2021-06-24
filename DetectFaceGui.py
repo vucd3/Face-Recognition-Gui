@@ -9,21 +9,23 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+import os
 import cv2
 import face_recognition
-import imutils
 import pickle
+import numpy as np
+#import RPi.GPIO as gpio
+from tensorflow.keras.models import load_model
+import tensorflow as tf
+import time
+
 
 class DetectFace(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(942, 612)
+        MainWindow.resize(1024, 600)
 
         self.MainWindow = MainWindow
-
-        self.add_face_gui = QtWidgets.QMainWindow()
-        self.delete_face_gui = QtWidgets.QMainWindow()
 
         font = QtGui.QFont('Arial', 12, QtGui.QFont.Bold)
 
@@ -34,18 +36,18 @@ class DetectFace(object):
         self.msg.setWindowTitle("Message")
         self.msg.setGeometry(QtCore.QRect(230, 180, 256, 121))
 
-        self.text = QtWidgets.QTextBrowser(self.centralwidget)
-        self.text.setGeometry(QtCore.QRect(200, 30, 171, 51))
+        self.text = QtWidgets.QLabel(self.centralwidget)
+        self.text.setGeometry(QtCore.QRect(210, 10, 121, 31))
         self.text.setObjectName("text")
         self.text.setStyleSheet("background-color: yellow")
 
         self.webcam = QtWidgets.QLabel(self.centralwidget)
-        self.webcam.setGeometry(QtCore.QRect(30, 110, 521, 401))
+        self.webcam.setGeometry(QtCore.QRect(60, 50, 450, 450))
         self.webcam.setText("")
         self.webcam.setObjectName("webcam")
 
         self.box = QtWidgets.QGroupBox(self.centralwidget)
-        self.box.setGeometry(QtCore.QRect(630, 240, 301, 221))
+        self.box.setGeometry(QtCore.QRect(670, 160, 301, 221))
         self.box.setObjectName("box")
         self.box.setFont(font)
 
@@ -97,58 +99,120 @@ class DetectFace(object):
         self.time_1.setFont(font)
 
         self.save = QtWidgets.QPushButton(self.centralwidget)
-        self.save.setGeometry(QtCore.QRect(10, 530, 551, 31))
+        self.save.setGeometry(QtCore.QRect(60, 510, 450, 40))
         self.save.setObjectName("save")
         self.save.setStyleSheet("background-color: red")
 
+        self.label_7 = QtWidgets.QLabel(self.centralwidget)
+        self.label_7.setGeometry(QtCore.QRect(620, 400, 180, 20))
+        self.label_7.setObjectName("label_7")
+        self.label_7.setFont(font)
+
+        self.weight = QtWidgets.QLineEdit(self.centralwidget)
+        self.weight.setGeometry(760, 400, 71, 25)
+        self.weight.setObjectName("weight")
+        self.weight.setFont(font)
+
+        self.label_8 = QtWidgets.QLabel(self.centralwidget)
+        self.label_8.setGeometry(840, 400, 21, 21)
+        self.label_8.setObjectName("label_8")
+        self.label_8.setFont(font)
+
+        self.ok = QtWidgets.QPushButton(self.centralwidget)
+        self.ok.setGeometry(890, 400, 51, 25)
+        self.ok.setObjectName("ok")
+        self.ok.setFont(font)
+
         self.quit = QtWidgets.QPushButton(self.centralwidget)
-        self.quit.setGeometry(QtCore.QRect(820, 520, 111, 41))
+        self.quit.setGeometry(QtCore.QRect(860, 470, 141, 61))
         self.quit.setObjectName("quit")
         self.quit.setStyleSheet("background-color: red")
 
         MainWindow.setCentralWidget(self.centralwidget)
 
-        self.title = "<span style=\" font-size:25pt; font-weight:600; color:#ff0000;\" >"
+        self.title = "<span style=\" font-size:16pt; font-weight:600; color:#ff0000;\" >"
         self.title += "WEBCAM"
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
         self.capture = cv2.VideoCapture(0)
-
+        
         self.timer = QtCore.QTimer()
         self.timer.start(5)
         self.timer.timeout.connect(self.update_frame)
-
+        
         self.timer_1 = QtCore.QTimer()
         self.timer_1.start(1000)
         self.timer_1.timeout.connect(self.displayTime)
-        
-        self.face = None
-        self.face_name = None
 
+        self.le = pickle.loads(open("le.pickle", "rb").read())
+        self.model = load_model("liveness.h5")
+        
+        '''
+        self.interpreter_fp16 = tf.lite.Interpreter(model_path="my_model_quant_f16.tflite")
+        self.interpreter_fp16.allocate_tensors()
+        
+        self.input_index = self.interpreter_fp16.get_input_details()[0]["index"]
+        self.output_index = self.interpreter_fp16.get_output_details()[0]["index"]
+        '''
+
+        '''
+        self.DT = 21
+        self.SCK = 20
+        
+        gpio.setwarnings(False)
+        gpio.setmode(gpio.BCM)
+        gpio.setup(self.SCK, gpio.OUT)
+        
+        gpio.setup(17, gpio.OUT)
+        
+        self.servo = gpio.PWM(17, 50)
+        self.servo.start(11)
+        '''
+
+        self.nameGetRice = []
+        self.timeGetRcie = []
+        #Load timeofGetRice File
+        if os.path.getsize("timeGetRice.pickle") > 0:
+            with open("timeGetRice.pickle", "rb") as f:
+                data = pickle.load(f)
+            self.nameGetRice = data["name"]
+            self.timeGetRcie = data["time"]
+            f.close()
+
+        self.face_name = ""
         self.faceEnable = None
 
         self.image_detected = None
+        
+        self.weight_enable = False
+
         self.face_cascade = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
 
+        self.ok.clicked.connect(self.enter_weight)
         self.save.clicked.connect(self.save_infor)
         self.quit.clicked.connect(self.quitGui)
-
-
+        
+        self.prev_time_frame = 0
+        self.new_time_frame = 0
+        
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "DETECT FACE"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "NHẬN DIỆN KHUÔN MẶT"))
 
-        self.text.setHtml(_translate("MainWindow", self.title))
-        self.box.setTitle(_translate("MainWindow", "Information"))
-        self.label_2.setText(_translate("MainWindow", "NAME"))
+        self.text.setText(_translate("MainWindow", self.title))
+        self.box.setTitle(_translate("MainWindow", "Thông tin"))
+        self.label_2.setText(_translate("MainWindow", "Tên"))
         self.label_3.setText(_translate("MainWindow", "TIME"))
         self.label_4.setText(_translate("MainWindow", "DATE"))
         self.label_5.setText(_translate("MainWindow", "DATE"))
         self.label_6.setText(_translate("MainWindow", "TIME"))
+        self.label_7.setText(_translate("MainWindow", "Nhập khối lượng"))
+        self.label_8.setText(_translate("MainWindow", "kg"))
+        self.ok.setText(_translate("MainWindow", "OK"))
 
-        self.save.setText(_translate("MainWindow", "SAVE INFORMATION"))
+        self.save.setText(_translate("MainWindow", "Nhận diện khuôn mặt"))
         self.quit.setText(_translate("MainWindow", "QUIT"))
 
     def displayTime(self):
@@ -158,10 +222,107 @@ class DetectFace(object):
         self.time_1.setText(current_time.toString())
         self.date_1.setText(current_date.toString())
 
+    def delete_text(self):
+        self.name.setText("")
+        self.time.setText("")
+        self.date.setText("")
+
+    def save_infor_to_file(self, name, date, time, weight):
+        f = open("information.txt", "a+")
+        f.write(name + "\t\t" + date.toString() + "\t" 
+        + time.toString() + "\t" + weight + " kg" + "\n")
+
+    def antispoofing(self):
+        face = cv2.resize(self.roi_color, (32, 32))
+        face = face.astype("float32") / 255.0
+        face = np.expand_dims(face, axis=0)
+        '''
+        self.interpreter_fp16.set_tensor(self.input_index, face)
+        self.interpreter_fp16.invoke()
+        preds =  self.interpreter_fp16.get_tensor(self.output_index)[0]
+        '''
+        preds = self.model.predict(face)[0]
+        
+        j = np.argmax(preds)
+        
+        label = self.le.classes_[j]
+
+        return label      
+    
+    def is_check_time_of_getRice(self, name, time):
+        if name in self.nameGetRice:
+            if time == self.timeGetRcie[self.nameGetRice.index(name)]:
+                return False
+            else:
+                self.timeGetRcie[self.nameGetRice.index(name)] = time
+        else:
+            self.nameGetRice.append(name)
+            self.timeGetRcie.append(time)
+        return True
+    
+    def save_name_and_time_getRice(self):
+        data = {"name": self.nameGetRice, "time": self.timeGetRcie}
+        f = open("timeGetRice.pickle", "wb") 
+        f.write(pickle.dumps(data))
+        f.close()
+
+    '''
+    def process_weight(self, weight): 
+        self.servo.ChangeDutyCycle(3)
+        val=0
+
+        def readCount():
+            i=0
+            Count=0
+            gpio.setup(self.DT, gpio.OUT)
+            gpio.output(self.DT,1)
+            gpio.output(self.SCK,0)
+            gpio.setup(self.DT, gpio.IN)
+
+            while gpio.input(self.DT) == 1:
+                i=0
+            for i in range(24):
+                    gpio.output(self.SCK,1)
+                    Count=Count<<1
+
+                    gpio.output(self.SCK,0)
+                    #time.sleep(0.001)
+                    if gpio.input(self.DT) == 0: 
+                        Count=Count+1
+                        #print Count
+                    
+            gpio.output(self.SCK,1)
+            Count=Count^0x800000
+            #time.sleep(0.001)
+            gpio.output(self.SCK,0)
+            return Count  
+
+        val = readCount()
+
+        while True:
+            count = readCount()
+            w = 0
+            w = (val-count)/106
+            print(w)
+            if w > float(weight)*200:
+                self.servo.ChangeDutyCycle(11)
+                break
+    '''
+
+    def off_webcam(self):
+        self.timer.stop()
+        self.capture.release()
+        cv2.destroyAllWindows()
+
     def update_frame(self):
         _, self.image = self.capture.read()
-        self.image_detected = self.detect_face(self.image)
-        self.displayImage(self.image_detected)
+        
+        self.new_time_frame = time.time()
+        
+        self.resize_c = cv2.resize(self.image, (1024, 600))
+        self.resize = cv2.resize(self.image, (1024, 600))
+        self.detect_face()
+        self.displayImage(self.resize)
 
     def displayImage(self,img):
         outImage=QtGui.QImage(img,img.shape[1],img.shape[0],img.strides[0],QtGui.QImage.Format_RGB888)
@@ -171,83 +332,95 @@ class DetectFace(object):
         self.webcam.setPixmap(QtGui.QPixmap.fromImage(outImage))
         self.webcam.setScaledContents(True)
     
-    def detect_face(self, img):
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        #rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    def detect_face(self):
+        gray = cv2.cvtColor(self.resize, cv2.COLOR_BGR2GRAY)
         self.faces = self.face_cascade.detectMultiScale(gray,scaleFactor = 1.1, 
-            minNeighbors=5)
-            
+            minNeighbors=5, minSize=(100, 100), maxSize=(350, 350))
+        
         for (x, y, w, h) in self.faces:
-            cv2.rectangle(img, (x, y), (x+w, y+h), (0, 255, 0), 5)
-
-        return img
+            cv2.rectangle(self.resize, (x, y), (x+w, y+h), (0, 255, 0), 5)
+            self.roi_color = self.resize_c[y:y+h, x:x+w]
 
     def recognize_face(self, img):
         rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-
         data = pickle.loads(open("encodings.pickle", "rb").read())    
 
-        if len(self.faces) > 0:
+        name = "Unknown"
+        if len(self.faces) == 1:
             self.faceEnable = True
+            boxes = [(y, x + w, y + h, x) for (x, y, w, h) in self.faces]
+            encodings = face_recognition.face_encodings(rgb, boxes)
         else:
             self.faceEnable = False
+            return name
 
-        boxes = [(y, x + w, y + h, x) for (x, y, w, h) in self.faces]
-
-        encodings = face_recognition.face_encodings(rgb, boxes)
-
-        name  = ""
-        
         for encoding in encodings:
-            matches = face_recognition.compare_faces(data["encodings"],
-                encoding)
-            
-            name = "Unknown"
-
-            if True in matches:
-                matchedIdxs = [i for (i, b) in enumerate(matches) if b]
-                counts = {}
-
-                for i in matchedIdxs:
-                    name = data["names"][i]
-                    counts[name] = counts.get(name, 0) + 1
-                name = max(counts, key=counts.get)
-
-            if name != "Unknown":
-                return name
+            #matches = face_recognition.compare_faces(data["encodings"], encoding)
+            face_distances = face_recognition.face_distance(data["encodings"], encoding)
+            best_match_index = np.argmin(face_distances)
+            if face_distances[best_match_index] < 0.4:
+                name = data["names"][best_match_index]
         return name
-    
-    def save_infor(self):
-        name = self.recognize_face(self.image_detected)
 
-        current_date = QtCore.QDate.currentDate()
-        current_time = QtCore.QTime.currentTime()
+    def save_infor(self):
+        self.delete_text()
+        self.face_name = self.recognize_face(self.resize_c)
+
+        self.current_date = QtCore.QDate.currentDate()
+        self.current_time = QtCore.QTime.currentTime()
         
         if self.faceEnable:
-            if name != "Unknown":
-                self.name .setText(name)
-                self.time.setText(current_time.toString())
-                self.date.setText(current_date.toString())
-                self.save_infor_to_file(name, current_date, current_time)
-                self.msg.setText("Save your information succesfully!")
+            predict = self.antispoofing()
+            if predict == "real":
+                if self.face_name != "Unknown":
+                    self.name .setText(self.face_name)
+                    self.time.setText(self.current_time.toString())
+                    self.date.setText(self.current_date.toString())
+                    self.msg.setText("Nhận diện khuôn mặt thành công!")
+                    self.weight_enable = True
+                else:
+                    self.msg.setText("Hệ thống không nhận diện được khuôn mặt của bạn!")
             else:
-                self.msg.setText("System can not identify your face!")
+                self.msg.setText("Khuôn mặt giả mạo!")
         else:
-            self.msg.setText("System can not detect your face!")
+            self.msg.setText("Hệ thống không phát hiện được khuôn mặt!")
         self.msg.exec()
-    
-    def save_infor_to_file(self, name, date, time):
-        f = open("information.txt", "a+")
-        f.write(name + "\t\t" + date.toString() + "\t" 
-        + time.toString() + "\n")
 
-    def off_webcam(self):
-        self.timer.stop()
-        self.capture.release()
-        cv2.destroyAllWindows()
+        
+        fps = 1 / (self.new_time_frame - self.prev_time_frame)
+        self.prev_time_frame = self.new_time_frame
+        print(fps)
+        
+    def enter_weight(self):
+        weight = self.weight.text()
+
+        if weight == "":
+            self.msg.setText("Nhập khối lượng!")
+        elif not weight.isnumeric():
+            self.msg.setText("Khối lượng có định dạng sai!")
+        else:
+            if self.weight_enable:
+                if self.is_check_time_of_getRice(self.face_name, self.current_date.toString()):
+                    self.save_name_and_time_getRice()
+                    self.delete_text()
+                    self.weight_enable = False
+                    #self.process_weight(weight)
+                    self.save_infor_to_file(self.face_name, self.current_date, self.current_time, weight)
+                    self.msg.setText("Kết thúc!")
+                else:
+                    self.delete_text()
+                    self.msg.setText("Hôm nay bạn đã lấy gạo!")
+            else:
+                self.msg.setText("Khuôn mặt của bạn chưa được nhận diện!")
+
+        self.weight.setText("")
+        self.msg.exec()
 
     def quitGui(self):
+        #self.servo.stop()
+        #gpio.cleanup()
         self.off_webcam()
+        self.timer_1.stop()
         self.MainWindow.close()
 
 if __name__ == "__main__":
